@@ -1,16 +1,25 @@
-# This is a sample Python script.
+import socket
+import os
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+WORKING_DIR = os.getcwd()
 
+server = socket.socket()
+server.bind(('', 80))
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+server.listen(1)
 
+while True:
+    conn, addr = server.accept()
+    print(addr)
+    request = conn.recv(10240).decode().split('\n')
+    #print(request)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    method,url, protocol = request[0].split(' ')
+    url = os.path.join(WORKING_DIR,url[1:])
+    print(url)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    response = 'test'
+    conn.send(response.encode())
+    conn.close()
+    print('Connection closed\n')
+
