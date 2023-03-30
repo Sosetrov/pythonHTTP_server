@@ -1,25 +1,41 @@
 import socket
-import os
 
-WORKING_DIR = os.getcwd()
+def start_my_server():
+    try:
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind(('127.0.0.1',8000))
 
-server = socket.socket()
-server.bind(('', 80))
+        server.listen(4)
 
-server.listen(1)
+        while True:
+            print('Working...')
+            client_socket, address = server.accept()
+            data = client_socket.recv(1024).decode('utf-8')
+            #print(data)
+            content = load_page_from_get_request(data)
+            #     'Well done, buddy...'.encode('utf-8')
+            #
+            client_socket.send(content)
+            #HDRS.encode('utf-8') +
+            client_socket.shutdown(socket.SHUT_WR)
+    except KeyboardInterrupt:
+        server.close()
+        print('shutdown this shift...')
 
-while True:
-    conn, addr = server.accept()
-    print(addr)
-    request = conn.recv(10240).decode().split('\n')
-    #print(request)
+def load_page_from_get_request(request_data):
+    HDRS = 'HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n'
+    HDRS_404 = 'HTTP/1.1 404 OK\r\nContent-Type: text/html; charset = utf-8\r\n\r\n'
+    path = request_data.split(' ')[1]
+    response = ''
+    try:
+        with open('views'+path, 'rb') as file:
+            response = file.read()
+        return HDRS.encode('utf-8') + response
+    except FileNotFoundError:
+        return (HDRS_404 + 'Sorry, bro! No PAge...').encode('utf-8')
 
-    method,url, protocol = request[0].split(' ')
-    url = os.path.join(WORKING_DIR,url[1:])
-    print(url)
+#client_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    response = 'test'
-    conn.send(response.encode())
-    conn.close()
-    print('Connection closed\n')
+if __name__ == '__main__':
+    start_my_server()
 
